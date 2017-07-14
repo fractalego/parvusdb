@@ -103,7 +103,7 @@ RETURN a, r1;
 
 The return value would be a list of the form
 ```
-[{'tag': 'PERSON', 'text': 'john'}, {'relation': 'LIVES_AT'}]
+[{'a': {'tag': 'PERSON', 'text': 'john'}, 'r1': {'relation': 'LIVES_AT'}}]
 ```
 
 If no vertex or edge name is specified, the system return the whole graph (in the 'parvusdb format' ).
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
 which brings the output
 ```bash
-["{'tag': 'PERSON', 'text': 'john'}(a), {'tag': 'PLACE', 'text': 'London'}(b), {'relation': 'LIVES_AT'}(a,b)"]
+[{'GRAPH': "{'tag': 'PERSON', 'text': 'john'}(a), {'tag': 'PLACE', 'text': 'London'}(b), {'relation': 'LIVES_AT'}(a,b)"}]
 ```
 
 Then we can try to match elements of the triplet
@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
 with output
 ```bash
-[{'tag': 'PLACE', 'text': 'London', 'name': 'b'}, {'tag': 'PERSON', 'text': 'john', 'name': 'a'}]
+[{'a': {'name': 'a', 'tag': 'PERSON', 'text': 'john'}, 'b': {'name': 'b', 'tag': 'PLACE', 'text': 'London'}}]
 ```
 
 We can limit the matching process by using WHERE
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
 with output
 ```python
-[{'name': 'v2', 'text': 'London', 'tag': 'PLACE'}, {'name': 'v1', 'text': 'joseph', 'tag': 'PERSON'}]
+[{'_b': {'text': 'London', 'tag': 'PLACE', 'name': 'v2'}, '_a': {'text': 'joseph', 'tag': 'PERSON', 'name': 'v1'}}]
 ```
 
 ## TODO
