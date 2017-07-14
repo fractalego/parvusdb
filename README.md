@@ -112,7 +112,7 @@ If no vertex or edge name is specified, the system return the whole graph (in th
 
 Let's add a triplet to a graph
 ```python
-from igraph import Graph, plot
+from igraph import Graph
 from parvusdb import GraphDatabase
 
 
