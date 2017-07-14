@@ -87,25 +87,27 @@ class GraphBuilder:
         """
         return self.g
 
-    def build_variables(self, variables):
+    def build_variables(self, variable_placeholders):
         """
         :param variables: The list of vertices/edges to return
-        :return: the JSON of the properties of the variables to return
+        :return: a dict where the keys are the names of the variables to return,
+                 the values are the JSON of the properties of these variables
         """
-        variables = set(self.__substitute_names_in_list(variables))
-        attributes = []
-        for variable in variables:
+        variables = self.__substitute_names_in_list(variable_placeholders)
+        attributes = {}
+        for i, variable in enumerate(variables):
+            placeholder_name = variable_placeholders[i]
             try:
                 vertices = self.g.vs.select(name=variable)
-                attributes.append(vertices[0].attributes())
-                continue
+                attributes[placeholder_name] = vertices[0].attributes()
             except:
                 pass
+        for i, variable in enumerate(variables):
+            placeholder_name = variable_placeholders[i]
             try:
                 edges = self.g.es.select(name=variable)
                 edge_attr = edges[0].attributes()
-                edge_attr.pop('name')
-                attributes.append(edge_attr)
+                attributes[placeholder_name] = edge_attr
             except:
                 pass
         return attributes
@@ -147,25 +149,23 @@ class GraphBuilder:
                 pass
         return g
 
-    def __substitute_names_in_list(self, lst):
+    def __substitute_names_in_list(self, placeholder_lst):
+        return_list = []
         if self.update:
             self.vertices_substitution_dict, self.edges_substitution_dict \
                 = self.match.get_variables_substitution_dictionaries(self.g, self.matching_graph)
-        for i, v in enumerate(lst):
-            name = lst[i]
+        for i, placeholder_name in enumerate(placeholder_lst):
+            name = placeholder_name
             try:
-                new_name = self.vertices_substitution_dict[name]
-                lst[i] = new_name
-                continue
+                name = self.vertices_substitution_dict[name]
             except:
                 pass
             try:
-                new_name = self.edges_substitution_dict[name]
-                lst[i] = new_name
+                name = self.edges_substitution_dict[name]
             except:
                 pass
-
-        return lst
+            return_list.append(name)
+        return return_list
 
     def __merge_graphs(self, lhs, rhs):
         for v in rhs.vs:

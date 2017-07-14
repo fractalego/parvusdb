@@ -65,6 +65,7 @@ class Match:
         rhs_name = rhs_attr.pop('name')
 
         self.matching_code_container.add_graph_to_namespace(lhs_graph)
+        self.matching_code_container.add_graph_to_namespace(rhs_graph)
         if not self.matching_code_container.execute({rhs_name: lhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
@@ -76,8 +77,13 @@ class Match:
                        lhs_graph_index, rhs_graph_index):
         lhs_attr = lhs_graph.es[lhs_graph_index].attributes()
         rhs_attr = rhs_graph.es[rhs_graph_index].attributes()
-        lhs_attr.pop('name')
-        rhs_attr.pop('name')
+        lhs_name = lhs_attr.pop('name')
+        rhs_name = rhs_attr.pop('name')
+
+        self.matching_code_container.add_graph_to_namespace(lhs_graph)
+        self.matching_code_container.add_graph_to_namespace(rhs_graph)
+        if not self.matching_code_container.execute({rhs_name: lhs_name}):
+            return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
         if rhs_attr.items() <= lhs_attr.items():
             return True

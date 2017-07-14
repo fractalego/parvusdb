@@ -3,7 +3,7 @@ import hy
 
 class CodeContainer:
     def __init__(self):
-        self.code_string = ''
+        self.code_strings = []
         self.namespace = {'result': True}
 
     def add_line(self, string):
@@ -13,8 +13,7 @@ class CodeContainer:
         :param string: The line to add
         :return: None
         """
-        self.code_string += ' '
-        self.code_string += string
+        self.code_strings.append(string)
 
     def add_graph_to_namespace(self, graph):
         """
@@ -38,8 +37,10 @@ class CodeContainer:
         :return: True/False, depending on the result of the code (default is True)
         """
         code = '(setv result True)'
-        if self.code_string:
-            code = '(setv result ' + self.code_string + ')'
+        if len(self.code_strings) == 1:
+            code = '(setv result ' + self.code_strings[0] + ')'
+        if len(self.code_strings) > 1:
+            code = '(setv result (and ' + ' '.join(self.code_strings) + '))'
         code = self.__substitute_names_in_code(code, vertices_substitution_dict)
         x = hy.lex.tokenize(code)
         try:
@@ -72,7 +73,7 @@ class CodeContainer:
                 pass
         return graph
 
-    def __substitute_names_in_code(self, code_string, vertices_substitution_dict):
+    def __substitute_names_in_code(self, code, vertices_substitution_dict):
         for k, v in vertices_substitution_dict.items():
-            code_string = code_string.replace(' ' + k + ' ', ' ' + v + ' ')
-        return code_string
+            code = code.replace(' ' + k + ' ', ' ' + v + ' ')
+        return code

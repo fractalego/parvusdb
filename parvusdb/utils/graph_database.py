@@ -48,17 +48,12 @@ class GraphDatabase:
                  the corresponding properties is returned. If the RETURN command is used alone, a list with the entire
                  graph is returned. Otherwise it returns an empty list
         """
-
-        lines = []
-        for line in string.split('\n'):
-            if not line.strip() or line.strip()[0] == '#':
-                continue
-            lines.append(line)
-        lines = '\n'.join(lines).split(';')
+        repeat_n_times = self.__determine_how_many_times_to_repeat_query(string)
+        lines = self.__get_command_lines(string)
         return_list = []
         for line in lines:
-            lst = self.__query(line)
-            if lst:
+            lst = self.__query_n_times(line, repeat_n_times)
+            if lst and lst[0]:
                 return_list = lst
         return return_list
 
@@ -67,21 +62,41 @@ class GraphDatabase:
 
     # Private
 
-    def __query(self, string):
+    def __query_n_times(self, line, n):
+        builder = GraphBuilder(self.g)
+        rows = []
+        for _ in range(n):
+            try:
+                result = self.__query_with_builder(line, builder)
+                rows.append(result)
+                if not result:
+                    break
+            except MatchException:
+                break
+            for k, v in result.items():
+                try:
+                    builder.where('(not (= ' + k + ' ' + v['name'] + '))')
+                except:
+                    pass
+        return rows
+
+    def __query_with_builder(self, string, builder):
         """
+        Uses the builder in the argument to modify the graph, according to the commands in the string
+
         :param string: The single query to the database
         :return: The result of the RETURN operation
         """
         action_graph_pairs = self.__get_action_graph_pairs_from_query(string)
-        builder = GraphBuilder(self.g)
         for action, graph_str in action_graph_pairs:
             if action == 'RETURN' or action == '':
                 return self.__return(graph_str, builder)
             try:
                 self.action_dict[action](graph_str, builder)
             except MatchException:
-                return []
-
+                break
+        return {}
+            
     def __get_action_graph_pairs_from_query(self, query):
         """
         Splits the query into command/argument pairs, for example [("MATCH","{}(_a))", ("RETURN","_a")]
@@ -116,7 +131,7 @@ class GraphDatabase:
     def __return(self, graph_str, builder):
         variables = [v for v in graph_str.strip().replace(' ', '').split(',') if v]
         if not variables:
-            return [convert_graph_to_string(builder.build())]
+            return {'GRAPH': convert_graph_to_string(builder.build())}
         return builder.build_variables(variables)
 
     def __set(self, graph_str, builder):
@@ -126,3 +141,18 @@ class GraphDatabase:
     def __where(self, graph_str, builder):
         builder.where(graph_str)
         return True
+
+    def __get_command_lines(self, string):
+        lines = []
+        for line in string.split('\n'):
+            if not line.strip() or line.strip()[0] == '#':
+                continue
+            lines.append(line)
+        lines = '\n'.join(lines).split(';')
+        return lines
+
+    def __determine_how_many_times_to_repeat_query(self, query_string):
+        repeat_n_times = 5  # The number of times to repeat a query
+        if query_string.find('CREATE') != -1:
+            repeat_n_times = 1
+        return repeat_n_times

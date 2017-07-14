@@ -21,7 +21,7 @@ class Tests:
         lst = db.query(
             "CREATE {'word': 'alberto', 'tag':'NNP'}(a), {'word': 'WRITES'}(a,b), {'word': 'documentation', 'tag':'NN'}(b) RETURN a")
         expected_dict = {'word': 'alberto', 'name': 'a', 'tag': 'NNP'}
-        if lst[0] == expected_dict:
+        if lst[0]['a'] == expected_dict:
             return True
         return False
 
@@ -38,14 +38,12 @@ class Tests:
              """)
         expected_dicts = [{'word': 'alberto', 'tag': 'NNP', 'name': '1'},
                           {'word': 'documentation', 'tag': 'NN', 'name': '2'}]
-        if lst[0] == expected_dicts[0] and lst[1] == expected_dicts[1]:
-            return True
-        if lst[0] == expected_dicts[1] and lst[1] == expected_dicts[0]:
+        if lst[0]['a'] == expected_dicts[0] and lst[0]['b'] == expected_dicts[1]:
             return True
         return False
 
     def test_edge_matching_in_database(self):
-        self.__print_test_title('The edge a graph can be matched')
+        self.__print_test_title('The edge of a graph can be matched')
         g = Graph(directed=True)
         db = GraphDatabase(g)
         lst = db.query(
@@ -56,12 +54,12 @@ class Tests:
              RETURN _edge
              """)
         expected_dict_1 = {'word': 'BE'}
-        if lst[0] == expected_dict_1:
+        if lst[0]['_edge']['word'] == expected_dict_1['word']:
             return True
         return False
 
     def test_edge_deletion_in_database(self):
-        self.__print_test_title('The edge a graph can be deleted')
+        self.__print_test_title('The edge of a graph can be deleted')
         g = Graph(directed=True)
         db = GraphDatabase(g)
         lst = db.query(
@@ -73,7 +71,7 @@ class Tests:
              RETURN
              """)
         expected_graph_str = "{'word': 'alberto', 'tag': 'NNP'}(1), {'word': 'documentation', 'tag': 'NN'}(2), {'word': 'good', 'tag': 'NN'}(3), {'word': 'WRITES'}(1,2)"
-        if lst[0] == expected_graph_str:
+        if lst[0]['GRAPH'] == expected_graph_str:
             return True
         return False
 
@@ -91,7 +89,7 @@ class Tests:
              RETURN
              """)
         expected_graph_str = "{'word': 'alberto', 'tag': 'NN'}(1), {'word': 'documentation', 'tag': 'NN'}(2), {'word': 'good', 'tag': 'NN'}(3), {'word': 'WRITES'}(1,2)"
-        if lst[0] == expected_graph_str:
+        if lst[0]['GRAPH'] == expected_graph_str:
             return True
         return False
 
@@ -107,8 +105,8 @@ class Tests:
              SET (assoc _edge "word" "NEW_EDGE_NAME")
              RETURN _edge
              """)
-        expected_graph_str = "[{'word': 'NEW_EDGE_NAME'}]"
-        if str(lst) == expected_graph_str:
+        expected_new_edge_name = 'NEW_EDGE_NAME'
+        if lst[0]['_edge']['word'] == expected_new_edge_name:
             return True
         return False
 
@@ -126,7 +124,7 @@ class Tests:
              RETURN
              """)
         expected_graph_str = "{'tag': 'NNP', 'word': 'alberto'}(1), {'tag': 'NN', 'word': 'documentation'}(2), {'tag': 'NN', 'word': 'good'}(3), {'tag': 'NN', 'word': 'good2'}(4), {'word': 'WRITES'}(1,2), {'word': 'BE2'}(2,4)"
-        if lst[0] == expected_graph_str:
+        if lst[0]['GRAPH'] == expected_graph_str:
             return True
         return False
 
@@ -145,7 +143,7 @@ class Tests:
              RETURN d
              """)
         expected_dict = {'tag': 'NN', 'word': 'documentationgood', 'name': 'd'}
-        if lst[0] == expected_dict:
+        if lst[0]['d'] == expected_dict:
             return True
         return False
 
@@ -156,13 +154,16 @@ class Tests:
         lst = db.query(
             """
              CREATE {'word': 'alberto', 'tag':'NN'}(v1), {'word': 'WRITES'}(v1,v2), {'word': 'documentation', 'tag':'NN'}(v2),
-                    {'name': 'edge1', 'word': 'BE'}(v2,v3), {'word': 'good', 'tag':'NN'}(v3)
+                    {'name': 'edge1', 'word': 'BE'}(v2,v3), {'word': 'good', 'tag':'NN'}(v3);
+             """)
+        lst = db.query(
+            """
              MATCH {'tag':'NN'}(a), {'name': '_edge'}(a,b), {'tag': 'NN'}(b)
              WHERE (= (get a "word") "documentation")
              RETURN b
              """)
         expected_dict = {'word': 'good', 'name': 'v3', 'tag': 'NN'}
-        if lst[0] == expected_dict:
+        if lst[0]['b'] == expected_dict:
             return True
         return False
 
@@ -179,7 +180,47 @@ class Tests:
             RETURN r2
             """)
         expected_dict = {'type': 'AGENT'}
-        if lst[0] == expected_dict:
+        if lst[0]['r2']['type'] == expected_dict['type']:
+            return True
+        return False
+
+    def test_multiple_match_on_vertex(self):
+        self.__print_test_title('A match command is applied multiple times on a vertex')
+        g = Graph(directed=True)
+        db = GraphDatabase(g)
+        db.query(
+            """
+            CREATE {'word': 'alberto', 'tag':'NN'}(v1), {'type': 'nsubj'}(v1,v2), {'word': 'write', 'tag':'VB'}(v2),
+                   {'type': 'dobj'}(v2,v3), {'word': 'documentation', 'tag':'NN'}(v3)
+            """)
+        lst = db.query(
+            """
+            MATCH {}(a), {'name': 'r'}(a,b), {}(b)
+            RETURN a
+            """)
+        expected_dict1 = {'word': 'alberto', 'tag': 'NN', 'name': 'v1'}
+        expected_dict2 = {'word': 'write', 'tag': 'VB', 'name': 'v2'}
+        if lst[0]['a'] == expected_dict1 and lst[1]['a'] == expected_dict2:
+            return True
+        return False
+
+    def test_multiple_match_on_an_edge(self):
+        self.__print_test_title('A match command is applied multiple times on an edge')
+        g = Graph(directed=True)
+        db = GraphDatabase(g)
+        db.query(
+            """
+            CREATE {'word': 'alberto', 'tag':'NN'}(v1), {'type': 'nsubj'}(v1,v2), {'word': 'write', 'tag':'VB'}(v2),
+                   {'type': 'dobj'}(v2,v3), {'word': 'documentation', 'tag':'NN'}(v3)
+            """)
+        lst = db.query(
+            """
+            MATCH {}(a), {'name': 'r'}(a,b), {}(b)
+            RETURN r
+            """)
+        expected_dict1 = {'type': 'nsubj'}
+        expected_dict2 = {'type': 'dobj'}
+        if lst[0]['r']['type'] == expected_dict1['type'] and lst[1]['r']['type'] == expected_dict2['type']:
             return True
         return False
 
