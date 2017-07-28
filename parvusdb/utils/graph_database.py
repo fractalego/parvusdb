@@ -1,4 +1,5 @@
 from .aux import create_graph_from_string, convert_graph_to_string
+from .node_matcher import StringNodeMatcher
 from .graph_builder import GraphBuilder
 from .match import MatchException
 
@@ -10,14 +11,16 @@ def convert_special_characters_to_spaces(line):
 
 
 class GraphDatabase:
-    def __init__(self, g):
+    def __init__(self, g, node_matcher=StringNodeMatcher()):
         """
         This class interprets the commands translates them into operations on a graph by calling GraphBuilder().
         It accepts a graph as an argument and performs operations onto it.
 
         :param g: The graph to perform operations onto
+        :param node_matcher: The class that decides if two nodes match
         """
         self.g = g
+        self.node_matcher = node_matcher
         self.action_list = ['MATCH', 'CREATE', 'DELETE', 'RETURN', 'SET', 'WHERE',
                             'match', 'create', 'delete', 'return', 'set', 'where']
         self.action_dict = {'MATCH': self.__match,
@@ -63,7 +66,7 @@ class GraphDatabase:
     # Private
 
     def __query_n_times(self, line, n):
-        builder = GraphBuilder(self.g)
+        builder = GraphBuilder(self.g, self.node_matcher)
         rows = []
         for _ in range(n):
             try:
@@ -152,7 +155,7 @@ class GraphDatabase:
         return lines
 
     def __determine_how_many_times_to_repeat_query(self, query_string):
-        repeat_n_times = 5  # The number of times to repeat a query
+        repeat_n_times = len(self.g.vs)
         if query_string.find('CREATE') != -1:
             repeat_n_times = 1
         return repeat_n_times

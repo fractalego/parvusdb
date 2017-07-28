@@ -2,23 +2,26 @@ class MatchException(Exception):
     def __init__(self):
         pass
 
+
 class Match:
-    def __init__(self, matching_code_container):
+    def __init__(self, matching_code_container, node_matcher):
         self.matching_code_container = matching_code_container
+        self.node_matcher = node_matcher
 
     def get_variables_substitution_dictionaries(self, lhs_graph, rhs_graph):
         """
         Looks for sub-isomorphisms of rhs into lhs
 
-        :param lhs_graph: The graph to look sub-isomorphisms into (the bigger graph_
+        :param lhs_graph: The graph to look sub-isomorphisms into (the bigger graph)
         :param rhs_graph: The smaller graph
         :return: The list of matching names
         """
         if not rhs_graph:
-            return {}, {}
+            return {}, {}, {}
         return self.__collect_variables_that_match_graph(lhs_graph, rhs_graph)
 
     def __collect_variables_that_match_graph(self, lhs_graph, rhs_graph):
+        match_info = {}
         is_match, mapping, _ = lhs_graph.subisomorphic_vf2(other=rhs_graph,
                                                            return_mapping_12=True,
                                                            node_compat_fn=self.__node_compare,
@@ -44,7 +47,10 @@ class Match:
                 lhs_name = lhs_edge['name']
                 rhs_name = rhs_edge['name']
                 edges_substitution_dict[rhs_name] = lhs_name
-        return vertices_substitution_dict, edges_substitution_dict
+
+        match_info['__RESULT__'] = is_match
+
+        return vertices_substitution_dict, edges_substitution_dict, match_info
 
     def __substitute_names_in_list(self, lst, substitution_dict):
         for i, v in enumerate(lst):
@@ -69,7 +75,7 @@ class Match:
         if not self.matching_code_container.execute({rhs_name: lhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
-        if rhs_attr.items() <= lhs_attr.items():
+        if self.node_matcher.left_contains_right(rhs_attr, lhs_attr):
             return True
         return False
 
@@ -85,6 +91,6 @@ class Match:
         if not self.matching_code_container.execute({rhs_name: lhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
-        if rhs_attr.items() <= lhs_attr.items():
+        if self.node_matcher.left_contains_right(rhs_attr, lhs_attr):
             return True
         return False

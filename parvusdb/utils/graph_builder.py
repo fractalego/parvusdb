@@ -3,7 +3,7 @@ from .match import Match
 
 
 class GraphBuilder:
-    def __init__(self, g):
+    def __init__(self, g, node_matcher):
         """
         This class performs the operations into the graph g.
 
@@ -14,8 +14,9 @@ class GraphBuilder:
         self.edges_substitution_dict = {}
         self.matching_graph = None
         self.matching_code_container = CodeContainer()
-        self.match = Match(self.matching_code_container)
+        self.match = Match(self.matching_code_container, node_matcher)
         self.update = True
+        self.match_info = {}
 
     def add_graph(self, rhs_graph):
         """
@@ -36,7 +37,7 @@ class GraphBuilder:
         :return: True/False, depending on the result of the LISP code
         """
         if self.update:
-            self.vertices_substitution_dict, self.edges_substitution_dict \
+            self.vertices_substitution_dict, self.edges_substitution_dict, self.match_info\
                 = self.match.get_variables_substitution_dictionaries(self.g, self.matching_graph)
         try:
             self.matching_graph = self.__apply_code_to_graph(code, self.matching_graph)
@@ -87,6 +88,13 @@ class GraphBuilder:
         """
         return self.g
 
+    def get_match_dict(self):
+        """
+
+        :return: A dict with the information on how the match went. The keys are:
+                    * __RESULT__: True/False
+        """
+
     def build_variables(self, variable_placeholders):
         """
         :param variables: The list of vertices/edges to return
@@ -110,6 +118,12 @@ class GraphBuilder:
                 attributes[placeholder_name] = edge_attr
             except:
                 pass
+        for i, variable in enumerate(variables):
+            placeholder_name = variable_placeholders[i]
+            try:
+                attributes[placeholder_name] = self.match_info[placeholder_name]
+            except:
+                pass
         return attributes
 
     # Private
@@ -131,7 +145,7 @@ class GraphBuilder:
 
     def __substitute_names_in_graph(self, g):
         if self.update:
-            self.vertices_substitution_dict, self.edges_substitution_dict \
+            self.vertices_substitution_dict, self.edges_substitution_dict, self.match_info \
                 = self.match.get_variables_substitution_dictionaries(self.g, self.matching_graph)
         for i, v in enumerate(g.vs):
             name = v['name']
@@ -152,7 +166,7 @@ class GraphBuilder:
     def __substitute_names_in_list(self, placeholder_lst):
         return_list = []
         if self.update:
-            self.vertices_substitution_dict, self.edges_substitution_dict \
+            self.vertices_substitution_dict, self.edges_substitution_dict, self.match_info \
                 = self.match.get_variables_substitution_dictionaries(self.g, self.matching_graph)
         for i, placeholder_name in enumerate(placeholder_lst):
             name = placeholder_name
