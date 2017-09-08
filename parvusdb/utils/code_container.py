@@ -77,3 +77,30 @@ class CodeContainer:
         for k, v in vertices_substitution_dict.items():
             code = code.replace(' ' + k + ' ', ' ' + v + ' ')
         return code
+
+
+class DummyCodeContainer:
+    def add_line(self, string):
+        pass
+
+    def add_graph_to_namespace(self, graph):
+        pass
+
+    def execute(self, vertices_substitution_dict={}):
+        return True
+
+    def substitute_namespace_into_graph(self, graph):
+        return graph
+
+    def __substitute_names_in_code(self, code, vertices_substitution_dict):
+        return code
+
+
+class CodeContainerFactory:
+    def create(self):
+        return CodeContainer()
+
+
+class DummyCodeContainerFactory:
+    def create(self):
+        return DummyCodeContainer()

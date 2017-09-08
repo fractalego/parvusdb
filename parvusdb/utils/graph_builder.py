@@ -3,7 +3,7 @@ from .match import Match
 
 
 class GraphBuilder:
-    def __init__(self, g, node_matcher):
+    def __init__(self, g, node_matcher, code_container_factory):
         """
         This class performs the operations into the graph g.
 
@@ -13,7 +13,7 @@ class GraphBuilder:
         self.vertices_substitution_dict = {}
         self.edges_substitution_dict = {}
         self.matching_graph = None
-        self.matching_code_container = CodeContainer()
+        self.matching_code_container = code_container_factory.create()
         self.match = Match(self.matching_code_container, node_matcher)
         self.update = True
         self.match_info = {}
@@ -33,7 +33,7 @@ class GraphBuilder:
         """
         Executes the code and apply it to the self.g
 
-        :param code: the LIST code to execute
+        :param code: the LISP code to execute
         :return: True/False, depending on the result of the LISP code
         """
         if self.update:

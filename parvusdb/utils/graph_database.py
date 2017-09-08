@@ -2,6 +2,7 @@ from .aux import create_graph_from_string, convert_graph_to_string
 from .node_matcher import StringNodeMatcher
 from .graph_builder import GraphBuilder
 from .match import MatchException
+from .code_container import CodeContainerFactory
 
 
 def convert_special_characters_to_spaces(line):
@@ -11,13 +12,14 @@ def convert_special_characters_to_spaces(line):
 
 
 class GraphDatabase:
-    def __init__(self, g, node_matcher=StringNodeMatcher()):
+    def __init__(self, g, node_matcher=StringNodeMatcher(), code_container_factory=CodeContainerFactory()):
         """
         This class interprets the commands translates them into operations on a graph by calling GraphBuilder().
         It accepts a graph as an argument and performs operations onto it.
 
         :param g: The graph to perform operations onto
         :param node_matcher: The class that decides if two nodes match
+        :param code_container_factory: the class that creates the object that executes the LISP code
         """
         self.g = g
         self.node_matcher = node_matcher
@@ -34,8 +36,9 @@ class GraphDatabase:
                             'set': self.__set,
                             'where': self.__where,
                             }
+        self.code_container_factory = code_container_factory
 
-    def query(self, string):
+    def query(self, string, repeat_n_times=None):
         """
         This method performs the operations onto self.g
 
@@ -46,12 +49,16 @@ class GraphDatabase:
                          MATCH {}(_a), {'relation': 'LIVES_AT'}(_a,_b), {}(_b)
                            WHERE (= (get _a "text") "joseph")
                          RETURN _a,_b;
+        :param repeat_n_times: The maximum number of times the graph is queried. It sets the maximum length of
+                               the return list. If None then the value is set by the function
+                               self.__determine_how_many_times_to_repeat_query(string)
 
         :return: If the RETURN command is called with a list of variables names, a list of JSON with
                  the corresponding properties is returned. If the RETURN command is used alone, a list with the entire
                  graph is returned. Otherwise it returns an empty list
         """
-        repeat_n_times = self.__determine_how_many_times_to_repeat_query(string)
+        if not repeat_n_times:
+            repeat_n_times = self.__determine_how_many_times_to_repeat_query(string)
         lines = self.__get_command_lines(string)
         return_list = []
         for line in lines:
@@ -66,7 +73,7 @@ class GraphDatabase:
     # Private
 
     def __query_n_times(self, line, n):
-        builder = GraphBuilder(self.g, self.node_matcher)
+        builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
         rows = []
         for _ in range(n):
             try:
