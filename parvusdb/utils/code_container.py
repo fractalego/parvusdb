@@ -1,10 +1,19 @@
+import ast
+import copy
+
 import hy
+from hy._compat import string_types
+from hy.compiler import hy_compile
+from hy.errors import HyTypeError
+from hy.importer import ast_compile
+from hy.models import HyObject, replace_hy_obj
 
 
 class CodeContainer:
     def __init__(self):
         self.code_strings = []
         self.namespace = {'result': True}
+        self._compiled_ast_and_expr = self.__compile_code(code_string='(setv result True)')
 
     def add_line(self, string):
         """
@@ -14,6 +23,12 @@ class CodeContainer:
         :return: None
         """
         self.code_strings.append(string)
+        code = ''
+        if len(self.code_strings) == 1:
+            code = '(setv result ' + self.code_strings[0] + ')'
+        if len(self.code_strings) > 1:
+            code = '(setv result (and ' + ' '.join(self.code_strings) + '))'
+        self._compiled_ast_and_expr = self.__compile_code(code_string=code)
 
     def add_graph_to_namespace(self, graph):
         """
@@ -36,18 +51,16 @@ class CodeContainer:
         :param vertices_substitution_dict: aliases of the variables in the code
         :return: True/False, depending on the result of the code (default is True)
         """
-        code = '(setv result True)'
-        if len(self.code_strings) == 1:
-            code = '(setv result ' + self.code_strings[0] + ')'
-        if len(self.code_strings) > 1:
-            code = '(setv result (and ' + ' '.join(self.code_strings) + '))'
-        code = self.__substitute_names_in_code(code, vertices_substitution_dict)
-        x = hy.lex.tokenize(code)
+
+        if vertices_substitution_dict:
+            namespace = self.__substitute_names_in_namespace(self.namespace, vertices_substitution_dict)
+        else:
+            namespace = self.namespace
         try:
-            hy.importer.hy_eval(x, self.namespace, "__main__")
+            self.__execute_code(self._compiled_ast_and_expr, namespace)
         except:
             pass
-        return self.namespace['result']
+        return namespace['result']
 
     def substitute_namespace_into_graph(self, graph):
         """
@@ -73,10 +86,53 @@ class CodeContainer:
                 pass
         return graph
 
-    def __substitute_names_in_code(self, code, vertices_substitution_dict):
-        for k, v in vertices_substitution_dict.items():
-            code = code.replace(' ' + k + ' ', ' ' + v + ' ')
-        return code
+    def __substitute_names_in_namespace(self, old_namespace, vertices_substitution_dict):
+        new_namespace = {}
+        for k, v in old_namespace.items():
+            if k in vertices_substitution_dict:
+                new_k = vertices_substitution_dict[k]
+                new_namespace[new_k] = old_namespace[k]
+                new_namespace[new_k]['name'] = k
+            else:
+                new_namespace[k] = old_namespace[k]
+        return new_namespace
+
+    def __compile_code(self, code_string):
+        hytree = hy.lex.tokenize(code_string)
+
+        module_name = '__main__'
+
+        foo = HyObject()
+        foo.start_line = 0
+        foo.end_line = 0
+        foo.start_column = 0
+        foo.end_column = 0
+        replace_hy_obj(hytree, foo)
+
+        if not isinstance(module_name, string_types):
+            raise HyTypeError(foo, "Module name must be a string")
+
+        _ast, expr = hy_compile(hytree, module_name, get_expr=True)
+
+        # Spoof the positions in the generated ast...
+        for node in ast.walk(_ast):
+            node.lineno = 1
+            node.col_offset = 1
+
+        for node in ast.walk(expr):
+            node.lineno = 1
+            node.col_offset = 1
+
+        return _ast, expr
+
+    def __execute_code(self, compiled_code, namespace):
+        _ast, expr = compiled_code
+
+        # Two-step eval: eval() the body of the exec call
+        eval(ast_compile(_ast, "<eval_body>", "exec"), namespace)
+
+        # Then eval the expression context and return that
+        return eval(ast_compile(expr, "<eval>", "eval"), namespace)
 
 
 class DummyCodeContainer:
@@ -91,9 +147,6 @@ class DummyCodeContainer:
 
     def substitute_namespace_into_graph(self, graph):
         return graph
-
-    def __substitute_names_in_code(self, code, vertices_substitution_dict):
-        return code
 
 
 class CodeContainerFactory:

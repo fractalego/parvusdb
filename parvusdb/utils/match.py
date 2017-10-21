@@ -72,7 +72,7 @@ class Match:
 
         self.matching_code_container.add_graph_to_namespace(lhs_graph)
         self.matching_code_container.add_graph_to_namespace(rhs_graph)
-        if not self.matching_code_container.execute({rhs_name: lhs_name}):
+        if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
         if self.node_matcher.left_contains_right(rhs_attr, lhs_attr):
@@ -88,7 +88,7 @@ class Match:
 
         self.matching_code_container.add_graph_to_namespace(lhs_graph)
         self.matching_code_container.add_graph_to_namespace(rhs_graph)
-        if not self.matching_code_container.execute({rhs_name: lhs_name}):
+        if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
         if self.node_matcher.left_contains_right(rhs_attr, lhs_attr):

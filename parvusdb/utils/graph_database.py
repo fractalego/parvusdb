@@ -85,7 +85,7 @@ class GraphDatabase:
                 break
             for k, v in result.items():
                 try:
-                    builder.where('(not (= ' + k + ' ' + v['name'] + '))')
+                    builder.where('(not (= (get ' + k + ' "name") "' + v['name'] + '"))')
                 except:
                     pass
         return rows
