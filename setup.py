@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='parvusdb',
-      version='0.0.12',
+      version='0.0.14',
       description='A lightweight in-memory graph database',
       url='http://github.com/fractalego/parvusdb',
       author='Alberto Cetoli',
