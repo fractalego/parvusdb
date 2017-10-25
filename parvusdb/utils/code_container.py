@@ -13,7 +13,7 @@ class CodeContainer:
     def __init__(self):
         self.code_strings = []
         self.namespace = {'result': True}
-        self._compiled_ast_and_expr = self.__compile_code(code_string='(setv result True)')
+        self._compiled_ast_and_expr = None, None
 
     def add_line(self, string):
         """
@@ -51,6 +51,9 @@ class CodeContainer:
         :param vertices_substitution_dict: aliases of the variables in the code
         :return: True/False, depending on the result of the code (default is True)
         """
+
+        if not self.code_strings:
+            return True
 
         if vertices_substitution_dict:
             namespace = self.__substitute_names_in_namespace(self.namespace, vertices_substitution_dict)

@@ -75,7 +75,13 @@ class GraphDatabase:
     def __query_n_times(self, line, n):
         builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
         rows = []
+        result = {}
         for _ in range(n):
+            for k, v in result.items():
+                try:
+                    builder.where('(not (= (get ' + k + ' "name") "' + v['name'] + '"))')
+                except:
+                    pass
             try:
                 result = self.__query_with_builder(line, builder)
                 rows.append(result)
@@ -83,11 +89,6 @@ class GraphDatabase:
                     break
             except MatchException:
                 break
-            for k, v in result.items():
-                try:
-                    builder.where('(not (= (get ' + k + ' "name") "' + v['name'] + '"))')
-                except:
-                    pass
         return rows
 
     def __query_with_builder(self, string, builder):
