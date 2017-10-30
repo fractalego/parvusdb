@@ -23,7 +23,6 @@ setup(name='parvusdb',
       install_requires=[
           'python-igraph',
           'hy',
-          'Cython',
       ],
-      ext_modules=cythonize(extensions),
+#      ext_modules=cythonize(extensions),
       zip_safe=False)
