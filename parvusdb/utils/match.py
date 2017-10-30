@@ -18,6 +18,8 @@ class Match:
         """
         if not rhs_graph:
             return {}, {}, {}
+        self.matching_code_container.add_graph_to_namespace(lhs_graph)
+        self.matching_code_container.add_graph_to_namespace(rhs_graph)
         return self.__collect_variables_that_match_graph(lhs_graph, rhs_graph)
 
     def __collect_variables_that_match_graph(self, lhs_graph, rhs_graph):
@@ -70,8 +72,6 @@ class Match:
         lhs_name = lhs_attr.pop('name')
         rhs_name = rhs_attr.pop('name')
 
-        self.matching_code_container.add_graph_to_namespace(lhs_graph)
-        self.matching_code_container.add_graph_to_namespace(rhs_graph)
         if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
@@ -86,8 +86,6 @@ class Match:
         lhs_name = lhs_attr.pop('name')
         rhs_name = rhs_attr.pop('name')
 
-        self.matching_code_container.add_graph_to_namespace(lhs_graph)
-        self.matching_code_container.add_graph_to_namespace(rhs_graph)
         if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
