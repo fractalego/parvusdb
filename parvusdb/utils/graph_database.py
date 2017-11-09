@@ -23,18 +23,12 @@ class GraphDatabase:
         """
         self.g = g
         self.node_matcher = node_matcher
-        self.action_list = ['MATCH', 'CREATE', 'DELETE', 'RETURN', 'SET', 'WHERE',
-                            'match', 'create', 'delete', 'return', 'set', 'where']
+        self.action_list = ['MATCH ', 'CREATE ', 'DELETE ', 'RETURN', 'SET ', 'WHERE ']
         self.action_dict = {'MATCH': self.__match,
                             'CREATE': self.__create,
                             'DELETE': self.__delete,
                             'SET': self.__set,
                             'WHERE': self.__where,
-                            'match': self.__match,
-                            'create': self.__create,
-                            'delete': self.__delete,
-                            'set': self.__set,
-                            'where': self.__where,
                             }
         self.code_container_factory = code_container_factory
 

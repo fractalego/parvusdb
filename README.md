@@ -52,7 +52,7 @@ A triplet can therefore be written in the form.
 ```
  
 ## Keywords of the graph database
-There are 6 commands
+There are 6 commands (they must be typed in upper case)
 * CREATE
 * DELETE
 * MATCH
