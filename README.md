@@ -208,5 +208,3 @@ with output
 ## Known issues
 * The igraph library does not like multiple edges on the same nodes, 
   therefore the MATCH function would not work correctly in those cases
-* The system only returns the first match. It should return a list of matches 
-  when there is ambiguity
