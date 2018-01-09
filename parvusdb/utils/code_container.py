@@ -92,6 +92,8 @@ class CodeContainer:
     def __substitute_names_in_namespace(self, old_namespace, vertices_substitution_dict):
         new_namespace = {}
         for k, v in old_namespace.items():
+            if k in new_namespace:
+                continue
             if k in vertices_substitution_dict:
                 new_k = vertices_substitution_dict[k]
                 new_namespace[new_k] = old_namespace[k]

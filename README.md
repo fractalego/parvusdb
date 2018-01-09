@@ -83,7 +83,7 @@ This keyword let the user specify a LISP code as a condition for the match.
 For example, if we want the "text" parameter of the node `a` to be in a list of names
 ```
 MATCH {'tag': 'PERSON'}(a), {'relation': 'LIVES_AT', 'name': 'r1'}(a,b), {'tag': 'PLACE'}(b)
-  WHERE (in (get a "text") ["john", "joseph", "joachim"]);
+  WHERE (in (get a "text") ["john" "joseph" "joachim"]);
 ```
 
 ### The keyword SET

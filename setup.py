@@ -13,7 +13,7 @@ extensions = [Extension('parvusdb', ['parvusdb' + '/__init__.py']),
                                            ])]
 
 setup(name='parvusdb',
-      version='0.0.20',
+      version='0.0.22',
       description='A lightweight in-memory graph database',
       url='http://github.com/fractalego/parvusdb',
       author='Alberto Cetoli',

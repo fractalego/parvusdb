@@ -167,6 +167,26 @@ class Tests:
             return True
         return False
 
+    def test_code_works_while_matching_graphs_with_keyword_IN(self):
+        self.__print_test_title('The code can decide if two graphs match using keyword IN')
+        g = Graph(directed=True)
+        db = GraphDatabase(g)
+        lst = db.query(
+            """
+             CREATE {'word': 'alberto', 'tag':'NN'}(v1), {'word': 'WRITES'}(v1,v2), {'word': 'documentation', 'tag':'NN'}(v2),
+                    {'name': 'edge1', 'word': 'BE'}(v2,v3), {'word': 'good', 'tag':'NN'}(v3);
+             """)
+        lst = db.query(
+            """
+             MATCH {'tag':'NN'}(a), {'name': '_edge'}(a,b), {'tag': 'NN'}(b)
+             WHERE (in (get a "word") ["documentation" "Doc"])
+             RETURN b
+             """)
+        expected_dict = {'word': 'good', 'name': 'v3', 'tag': 'NN'}
+        if lst[0]['b'] == expected_dict:
+            return True
+        return False
+
     def test_creation_after_deletion(self):
         self.__print_test_title('A new edge can be created after deleting one between the same vertices')
         g = Graph(directed=True)
