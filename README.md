@@ -37,12 +37,12 @@ The edges are written as
 where `a` is the _source_ node name and `b` is the _target_ node name. 
 As for the vertex, properties can be added inside the brackets
 ```
-{'relation', 'LIVES_AT'}(a,b)
+{'relation': 'LIVES_AT'}(a,b)
 ```
 
 A vertex can have a name too, though it must be given as a property
  ```
-{'relation', 'LIVES_AT', 'name': 'r1'}(a,b)
+{'relation': 'LIVES_AT', 'name': 'r1'}(a,b)
 ```
 
 
@@ -88,7 +88,7 @@ MATCH {'tag': 'PERSON'}(a), {'relation': 'LIVES_AT', 'name': 'r1'}(a,b), {'tag':
 
 ### The keyword SET
 This command let us modify the content of a graph.
-For example, if we want to change the text the node `a`   
+For example, if we want to change the text of the node `a`   
 ```
 MATCH {'tag': 'PERSON'}(a), {'relation': 'LIVES_AT', 'name': 'r1'}(a,b), {'tag': 'PLACE'}(b)
 SET (assoc a "text" "not john anymore");
