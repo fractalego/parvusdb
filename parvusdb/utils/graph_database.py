@@ -161,6 +161,8 @@ class GraphDatabase:
 
     def __add_results_to_cache(self, result):
         for k, v in result.items():
+            if type(v) == bool:
+                continue
             try:
                 forbidden_dict[v['name']].add(k)
             except KeyError:

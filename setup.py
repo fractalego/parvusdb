@@ -1,6 +1,5 @@
 from setuptools import setup
 from distutils.extension import Extension
-from Cython.Build import cythonize
 
 packages = ['parvusdb', 'parvusdb.utils']
 extensions = [Extension('parvusdb', ['parvusdb' + '/__init__.py']),
@@ -14,7 +13,7 @@ extensions = [Extension('parvusdb', ['parvusdb' + '/__init__.py']),
                                            ])]
 
 setup(name='parvusdb',
-      version='0.0.24',
+      version='0.0.25',
       description='A lightweight in-memory graph database',
       url='http://github.com/fractalego/parvusdb',
       author='Alberto Cetoli',

@@ -1,3 +1,2 @@
 python-igraph==0.7.1.post6
 hy==0.13.0
-Cython
