@@ -3,6 +3,7 @@ from .node_matcher import StringNodeMatcher
 from .graph_builder import GraphBuilder
 from .match import MatchException
 from .code_container import CodeContainerFactory
+from .cache import forbidden_dict
 
 
 def convert_special_characters_to_spaces(line):
@@ -69,17 +70,13 @@ class GraphDatabase:
     def __query_n_times(self, line, n):
         builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
         rows = []
-        result = {}
+        results = {}
         for _ in range(n):
-            for k, v in result.items():
-                try:
-                    builder.where('(not (= (get ' + k + ' "name") "' + v['name'] + '"))')
-                except:
-                    pass
+            self.__add_results_to_cache(results)
             try:
-                result = self.__query_with_builder(line, builder)
-                rows.append(result)
-                if not result:
+                results = self.__query_with_builder(line, builder)
+                rows.append(results)
+                if not results:
                     break
             except MatchException:
                 break
@@ -101,7 +98,7 @@ class GraphDatabase:
             except MatchException:
                 break
         return {}
-            
+
     def __get_action_graph_pairs_from_query(self, query):
         """
         Splits the query into command/argument pairs, for example [("MATCH","{}(_a))", ("RETURN","_a")]
@@ -161,3 +158,10 @@ class GraphDatabase:
         if query_string.find('CREATE') != -1:
             repeat_n_times = 1
         return repeat_n_times
+
+    def __add_results_to_cache(self, result):
+        for k, v in result.items():
+            try:
+                forbidden_dict[v['name']].add(k)
+            except KeyError:
+                forbidden_dict[v['name']] = set(k)

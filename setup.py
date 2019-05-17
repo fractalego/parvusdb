@@ -7,13 +7,14 @@ extensions = [Extension('parvusdb', ['parvusdb' + '/__init__.py']),
               Extension('parvusdb.utils', ['parvusdb/utils/__init__.py',
                                            'parvusdb/utils/aux.py',
                                            'parvusdb/utils/code_container.py',
+                                           'parvusdb/utils/cache.py'
                                            'parvusdb/utils/graph_builder.py',
                                            'parvusdb/utils/graph_database.py',
                                            'parvusdb/utils/node_matcher.py'
                                            ])]
 
 setup(name='parvusdb',
-      version='0.0.22',
+      version='0.0.24',
       description='A lightweight in-memory graph database',
       url='http://github.com/fractalego/parvusdb',
       author='Alberto Cetoli',
@@ -21,9 +22,7 @@ setup(name='parvusdb',
       license='MIT',
       packages=packages,
       install_requires=[
-          'python-igraph',
-          'hy',
-#          'Cython',
+          'python-igraph==0.7.1.post6',
+          'hy==0.13.0',
       ],
-#      ext_modules=cythonize(extensions),
       zip_safe=False)
