@@ -68,12 +68,12 @@ class GraphDatabase:
     # Private
 
     def __query_n_times(self, line, n):
-        builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
         rows = []
         results = {}
         for _ in range(n):
             self.__add_results_to_cache(results)
             try:
+                builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
                 results = self.__query_with_builder(line, builder)
                 rows.append(results)
                 if not results:

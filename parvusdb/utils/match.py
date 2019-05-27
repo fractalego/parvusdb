@@ -102,6 +102,5 @@ class Match:
 
     def __nodes_are_in_cache(self, lhs_name, rhs_name):
         if lhs_name in forbidden_dict and rhs_name in forbidden_dict[lhs_name]:
-            forbidden_dict.clear()
             return True
         return False
