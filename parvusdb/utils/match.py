@@ -27,35 +27,20 @@ class Match:
 
     def __collect_variables_that_match_graph(self, lhs_graph, rhs_graph):
         match_info = {}
-        is_match, mapping, _ = lhs_graph.subisomorphic_vf2(other=rhs_graph,
-                                                           return_mapping_12=True,
-                                                           node_compat_fn=self.__node_compare,
-                                                           edge_compat_fn=self.__edge_compare)
-        if not is_match:
+        self._vertices_substitution_list = []
+        self._edges_substitution_list = []
+        self._is_match = False
+        lhs_graph.subisomorphic_vf2(other=rhs_graph,
+                                   return_mapping_12=True,
+                                   node_compat_fn=self.__node_compare,
+                                   edge_compat_fn=self.__edge_compare,
+                                   callback=self.__callback)
+        if not self._is_match:
             raise MatchException()
-        vertices_substitution_dict = {}
-        edges_substitution_dict = {}
-        for lhs, rhs in enumerate(mapping):
-            if rhs == -1:
-                continue
-            lhs_name = lhs_graph.vs[lhs]['name']
-            rhs_name = rhs_graph.vs[rhs]['name']
-            vertices_substitution_dict[rhs_name] = lhs_name
-        for rhs_edge in rhs_graph.es:
-            source_target_list = self.__substitute_names_in_list([rhs_graph.vs[rhs_edge.tuple[0]]['name'],
-                                                                  rhs_graph.vs[rhs_edge.tuple[1]]['name']],
-                                                                 vertices_substitution_dict)
-            source_index = lhs_graph.vs.select(name=source_target_list[0])[0].index
-            target_index = lhs_graph.vs.select(name=source_target_list[1])[0].index
-            lhs_edges = lhs_graph.es.select(_source=source_index, _target=target_index)
-            for lhs_edge in lhs_edges:
-                lhs_name = lhs_edge['name']
-                rhs_name = rhs_edge['name']
-                edges_substitution_dict[rhs_name] = lhs_name
 
-        match_info['__RESULT__'] = is_match
+        match_info['__RESULT__'] = self._is_match
 
-        return vertices_substitution_dict, edges_substitution_dict, match_info
+        return self._vertices_substitution_list[0], self._edges_substitution_list[0], match_info
 
     def __substitute_names_in_list(self, lst, substitution_dict):
         for i, v in enumerate(lst):
@@ -102,5 +87,37 @@ class Match:
 
     def __nodes_are_in_cache(self, lhs_name, rhs_name):
         if lhs_name in forbidden_dict and rhs_name in forbidden_dict[lhs_name]:
+            forbidden_dict.clear()   #### USE THE CALLBACK HERE FOR MULTIPLE MATCHING!!!!
             return True
         return False
+
+    def __callback(self, lhs_graph, rhs_graph, map12, map21):
+        vertices_substitution_dict = {}
+        edges_substitution_dict = {}
+
+        if all([item == -1 for item in map12]):
+            return False
+
+        for lhs, rhs in enumerate(map12):
+            if rhs == -1:
+                continue
+            lhs_name = lhs_graph.vs[lhs]['name']
+            rhs_name = rhs_graph.vs[rhs]['name']
+            vertices_substitution_dict[rhs_name] = lhs_name
+        for rhs_edge in rhs_graph.es:
+            source_target_list = self.__substitute_names_in_list([rhs_graph.vs[rhs_edge.tuple[0]]['name'],
+                                                                  rhs_graph.vs[rhs_edge.tuple[1]]['name']],
+                                                                 vertices_substitution_dict)
+            source_index = lhs_graph.vs.select(name=source_target_list[0])[0].index
+            target_index = lhs_graph.vs.select(name=source_target_list[1])[0].index
+            lhs_edges = lhs_graph.es.select(_source=source_index, _target=target_index)
+            for lhs_edge in lhs_edges:
+                lhs_name = lhs_edge['name']
+                rhs_name = rhs_edge['name']
+                edges_substitution_dict[rhs_name] = lhs_name
+
+        self._is_match = True
+        self._vertices_substitution_list.append(vertices_substitution_dict)
+        self._edges_substitution_list.append(edges_substitution_dict)
+
+        return True
