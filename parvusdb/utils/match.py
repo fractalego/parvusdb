@@ -1,6 +1,3 @@
-from parvusdb.utils.cache import forbidden_dict
-
-
 class MatchException(Exception):
     def __init__(self):
         pass
@@ -31,10 +28,10 @@ class Match:
         self._edges_substitution_list = []
         self._is_match = False
         lhs_graph.subisomorphic_vf2(other=rhs_graph,
-                                   return_mapping_12=True,
-                                   node_compat_fn=self.__node_compare,
-                                   edge_compat_fn=self.__edge_compare,
-                                   callback=self.__callback)
+                                    return_mapping_12=True,
+                                    node_compat_fn=self.__node_compare,
+                                    edge_compat_fn=self.__edge_compare,
+                                    callback=self.__callback)
         if not self._is_match:
             raise MatchException()
 
@@ -60,8 +57,6 @@ class Match:
         lhs_name = lhs_attr.pop('name')
         rhs_name = rhs_attr.pop('name')
 
-        if self.__nodes_are_in_cache(lhs_name, rhs_name):
-            return False
         if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
@@ -76,18 +71,10 @@ class Match:
         lhs_name = lhs_attr.pop('name')
         rhs_name = rhs_attr.pop('name')
 
-        if self.__nodes_are_in_cache(lhs_name, rhs_name):
-            return False
         if not self.matching_code_container.execute({lhs_name: rhs_name}):
             return False
         rhs_attr = {k: v for k, v in rhs_attr.items() if v}
         if self.node_matcher.left_contains_right(rhs_attr, lhs_attr):
-            return True
-        return False
-
-    def __nodes_are_in_cache(self, lhs_name, rhs_name):
-        if lhs_name in forbidden_dict and rhs_name in forbidden_dict[lhs_name]:
-            forbidden_dict.clear()   #### USE THE CALLBACK HERE FOR MULTIPLE MATCHING!!!!
             return True
         return False
 
