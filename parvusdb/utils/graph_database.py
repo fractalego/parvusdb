@@ -68,10 +68,9 @@ class GraphDatabase:
 
     def __query_n_times(self, line, n):
         rows = []
-        results = {}
-        for _ in range(n):
+        for i in range(n):
             try:
-                builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory)
+                builder = GraphBuilder(self.g, self.node_matcher, self.code_container_factory, match_index=i)
                 results = self.__query_with_builder(line, builder)
                 rows.append(results)
                 if not results:

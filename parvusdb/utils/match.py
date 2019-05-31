@@ -4,9 +4,10 @@ class MatchException(Exception):
 
 
 class Match:
-    def __init__(self, matching_code_container, node_matcher):
+    def __init__(self, matching_code_container, node_matcher, match_index=0):
         self.matching_code_container = matching_code_container
         self.node_matcher = node_matcher
+        self._match_index = match_index
 
     def get_variables_substitution_dictionaries(self, lhs_graph, rhs_graph):
         """
@@ -28,7 +29,6 @@ class Match:
         self._edges_substitution_list = []
         self._is_match = False
         lhs_graph.subisomorphic_vf2(other=rhs_graph,
-                                    return_mapping_12=True,
                                     node_compat_fn=self.__node_compare,
                                     edge_compat_fn=self.__edge_compare,
                                     callback=self.__callback)
@@ -37,7 +37,11 @@ class Match:
 
         match_info['__RESULT__'] = self._is_match
 
-        return self._vertices_substitution_list[0], self._edges_substitution_list[0], match_info
+        max_return_length = len(self._vertices_substitution_list)
+
+        return self._vertices_substitution_list[self._match_index%max_return_length], \
+               self._edges_substitution_list[self._match_index%max_return_length], \
+               match_info
 
     def __substitute_names_in_list(self, lst, substitution_dict):
         for i, v in enumerate(lst):

@@ -3,7 +3,7 @@ from .match import Match
 
 
 class GraphBuilder:
-    def __init__(self, g, node_matcher, code_container_factory):
+    def __init__(self, g, node_matcher, code_container_factory, match_index):
         """
         This class performs the operations into the graph g.
 
@@ -14,7 +14,7 @@ class GraphBuilder:
         self.edges_substitution_dict = {}
         self.matching_graph = None
         self.matching_code_container = code_container_factory.create()
-        self.match = Match(self.matching_code_container, node_matcher)
+        self.match = Match(self.matching_code_container, node_matcher, match_index=match_index)
         self.update = True
         self.match_info = {}
 
