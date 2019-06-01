@@ -18,10 +18,13 @@ setup(name='parvusdb',
       url='http://github.com/fractalego/parvusdb',
       author='Alberto Cetoli',
       author_email='alberto@nlulite.com',
-      license='MIT',
       packages=packages,
       install_requires=[
           'python-igraph==0.7.1.post6',
           'hy==0.13.0',
       ],
-      zip_safe=False)
+      zip_safe=False,
+      classifiers=[
+          'License :: OSI Approved :: MIT License',
+      ]
+)
