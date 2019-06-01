@@ -1,3 +1,6 @@
+import functools
+
+
 class MatchException(Exception):
     def __init__(self):
         pass
@@ -54,6 +57,7 @@ class Match:
                 pass
         return lst
 
+    @functools.lru_cache(10)
     def __node_compare(self, lhs_graph, rhs_graph,
                        lhs_graph_index, rhs_graph_index):
         lhs_attr = lhs_graph.vs[lhs_graph_index].attributes()
@@ -68,6 +72,7 @@ class Match:
             return True
         return False
 
+    @functools.lru_cache(10)
     def __edge_compare(self, lhs_graph, rhs_graph,
                        lhs_graph_index, rhs_graph_index):
         lhs_attr = lhs_graph.es[lhs_graph_index].attributes()
