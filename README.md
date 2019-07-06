@@ -203,7 +203,6 @@ with output
 * Handling of errors in GraphDatabase.query_lines()
 * Ability to add LISP code outside WHERE and SET statements
 * Create a stand-alone command line for the database
-* Ability to match multiple items
 
 ## Known issues
 * The igraph library does not like multiple edges on the same nodes, 
